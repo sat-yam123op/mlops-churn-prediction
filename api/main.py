@@ -1,7 +1,9 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import joblib
 import pandas as pd
+import os
 
 # Create FastAPI application
 app = FastAPI(
@@ -10,26 +12,23 @@ app = FastAPI(
     version="1.0"
 )
 
-# Allow frontend to communicate with API
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Load trained model
 model = joblib.load("model/churn_model.pkl")
 
 
-@app.get("/")
-def home():
+# -----------------------------
+# API HOME
+# -----------------------------
+@app.get("/api")
+def api_home():
     return {
         "message": "Customer Churn Prediction API is running"
     }
 
 
+# -----------------------------
+# PREDICTION API
+# -----------------------------
 @app.post("/predict")
 def predict(customer: dict):
 
@@ -42,9 +41,11 @@ def predict(customer: dict):
     # Get churn probability
     probability = model.predict_proba(data)[0][1]
 
+    # Convert NumPy values to Python values
     prediction = int(prediction)
     probability = float(probability)
 
+    # Convert prediction to readable label
     if prediction == 1:
         result = "Churn"
     else:
@@ -54,3 +55,18 @@ def predict(customer: dict):
         "prediction": result,
         "churn_probability": round(probability, 4)
     }
+
+
+# -----------------------------
+# FRONTEND
+# -----------------------------
+frontend_path = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "frontend"
+)
+
+app.mount(
+    "/",
+    StaticFiles(directory=frontend_path, html=True),
+    name="frontend"
+)

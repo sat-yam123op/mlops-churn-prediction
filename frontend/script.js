@@ -1,5 +1,11 @@
-const API_URL = "https://churn-api-wfg4.onrender.com/predict";
+// ==========================================
+// Customer Churn Prediction - Frontend JS
+// ==========================================
 
+// Deployed FastAPI endpoint
+const API_URL = "/predict";
+
+// Get HTML elements
 const form = document.getElementById("churnForm");
 const predictBtn = document.getElementById("predictBtn");
 
@@ -11,85 +17,87 @@ const predictionText = document.getElementById("prediction");
 const probabilityText = document.getElementById("probability");
 
 
+// ==========================================
+// Form Submit
+// ==========================================
+
 form.addEventListener("submit", async function (event) {
 
     // Prevent page refresh
     event.preventDefault();
 
-    // Hide previous messages
+    // Hide old results/errors
     result.classList.add("hidden");
     error.classList.add("hidden");
 
     // Show loading
     loading.classList.remove("hidden");
+
+    // Disable button while prediction is running
     predictBtn.disabled = true;
     predictBtn.textContent = "Predicting...";
 
 
-    // Collect form data
+    // ==========================================
+    // Collect Customer Data
+    // ==========================================
+
     const customerData = {
 
         gender: document.getElementById("gender").value,
 
-        SeniorCitizen:
-            parseInt(document.getElementById("SeniorCitizen").value),
+        SeniorCitizen: parseInt(
+            document.getElementById("SeniorCitizen").value
+        ),
 
-        Partner:
-            document.getElementById("Partner").value,
+        Partner: document.getElementById("Partner").value,
 
-        Dependents:
-            document.getElementById("Dependents").value,
+        Dependents: document.getElementById("Dependents").value,
 
-        tenure:
-            parseInt(document.getElementById("tenure").value),
+        tenure: parseInt(
+            document.getElementById("tenure").value
+        ),
 
-        PhoneService:
-            document.getElementById("PhoneService").value,
+        PhoneService: document.getElementById("PhoneService").value,
 
-        MultipleLines:
-            document.getElementById("MultipleLines").value,
+        MultipleLines: document.getElementById("MultipleLines").value,
 
-        InternetService:
-            document.getElementById("InternetService").value,
+        InternetService: document.getElementById("InternetService").value,
 
-        OnlineSecurity:
-            document.getElementById("OnlineSecurity").value,
+        OnlineSecurity: document.getElementById("OnlineSecurity").value,
 
-        OnlineBackup:
-            document.getElementById("OnlineBackup").value,
+        OnlineBackup: document.getElementById("OnlineBackup").value,
 
-        DeviceProtection:
-            document.getElementById("DeviceProtection").value,
+        DeviceProtection: document.getElementById("DeviceProtection").value,
 
-        TechSupport:
-            document.getElementById("TechSupport").value,
+        TechSupport: document.getElementById("TechSupport").value,
 
-        StreamingTV:
-            document.getElementById("StreamingTV").value,
+        StreamingTV: document.getElementById("StreamingTV").value,
 
-        StreamingMovies:
-            document.getElementById("StreamingMovies").value,
+        StreamingMovies: document.getElementById("StreamingMovies").value,
 
-        Contract:
-            document.getElementById("Contract").value,
+        Contract: document.getElementById("Contract").value,
 
-        PaperlessBilling:
-            document.getElementById("PaperlessBilling").value,
+        PaperlessBilling: document.getElementById("PaperlessBilling").value,
 
-        PaymentMethod:
-            document.getElementById("PaymentMethod").value,
+        PaymentMethod: document.getElementById("PaymentMethod").value,
 
-        MonthlyCharges:
-            parseFloat(document.getElementById("MonthlyCharges").value),
+        MonthlyCharges: parseFloat(
+            document.getElementById("MonthlyCharges").value
+        ),
 
-        TotalCharges:
-            parseFloat(document.getElementById("TotalCharges").value)
+        TotalCharges: parseFloat(
+            document.getElementById("TotalCharges").value
+        )
     };
 
 
+    // ==========================================
+    // Send Data to FastAPI
+    // ==========================================
+
     try {
 
-        // Send data to FastAPI
         const response = await fetch(API_URL, {
 
             method: "POST",
@@ -102,28 +110,33 @@ form.addEventListener("submit", async function (event) {
         });
 
 
-        // Check API response
+        // Check whether API returned an error
         if (!response.ok) {
+
             throw new Error(
-                `API request failed: ${response.status}`
+                `API request failed with status ${response.status}`
             );
         }
 
 
-        // Convert response to JSON
+        // Convert API response to JSON
         const data = await response.json();
 
 
-        // Display prediction
+        // ==========================================
+        // Display Prediction
+        // ==========================================
+
         predictionText.textContent = data.prediction;
 
 
         // Convert probability to percentage
         const probability =
-            (data.churn_probability * 100).toFixed(2);
+            Number(data.churn_probability) * 100;
+
 
         probabilityText.textContent =
-            `${probability}%`;
+            probability.toFixed(2) + "%";
 
 
         // Show result
@@ -131,9 +144,14 @@ form.addEventListener("submit", async function (event) {
 
     }
 
+
+    // ==========================================
+    // Handle Errors
+    // ==========================================
+
     catch (err) {
 
-        console.error(err);
+        console.error("Prediction error:", err);
 
         error.textContent =
             "Unable to connect to the prediction API. Please try again.";
@@ -141,12 +159,15 @@ form.addEventListener("submit", async function (event) {
         error.classList.remove("hidden");
     }
 
+
+    // ==========================================
+    // Reset Button
+    // ==========================================
+
     finally {
 
-        // Hide loading
         loading.classList.add("hidden");
 
-        // Enable button
         predictBtn.disabled = false;
 
         predictBtn.textContent = "Predict Churn";

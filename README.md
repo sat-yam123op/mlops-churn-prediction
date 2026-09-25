@@ -6,10 +6,6 @@ A complete end-to-end Machine Learning project that predicts whether a customer 
 
 👉 **[Customer Churn Prediction - Live Application](https://churn-api-wfg4.onrender.com/)**
 
-## 📂 GitHub Repository
-
-👉 **[GitHub Repository](https://github.com/sat-yam123op/mlops-churn-prediction)**
-
 ---
 
 ## 📌 Project Overview
